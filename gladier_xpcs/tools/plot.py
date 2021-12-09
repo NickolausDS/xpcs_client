@@ -1,3 +1,5 @@
+import pathlib
+import sys
 from gladier import GladierBaseTool, generate_flow_definition
 
 
@@ -290,3 +292,10 @@ class MakeCorrPlots(GladierBaseTool):
     funcx_functions = [
         make_corr_plots
     ]
+
+
+
+if __name__ == '__main__':
+    this_dir = pathlib.Path('.').resolve()
+    hdf_file = sys.argv[1]
+    make_corr_plots(proc_dir=this_dir, hdf_file=hdf_file)
