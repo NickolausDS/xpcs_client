@@ -126,7 +126,7 @@ class NickPortalDeployment(NickTheta):
 
 class HannahTheta(BaseDeployment):
     globus_endpoints = {
-        'globus_endpoint_source': 'fdc7e74a-fa78-11e8-9342-0e3d676669f4',
+        'globus_endpoint_source': '74defd5b-5f61-42fc-bcc4-834c9f376a4f',
         'globus_endpoint_proc': '08925f04-569f-11e7-bef8-22000b9a448b',
     }
 
