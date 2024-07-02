@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'concierge_app',
     'xpcs_portal.xpcs_index',
     'alcf_data_portal',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -155,6 +156,7 @@ LOGGING = {
         'concierge_app': {'handlers': ['stream'], 'level': 'DEBUG', 'propagate': True},
         'globus_app_flows': {'handlers': ['stream'], 'level': 'INFO', 'propagate': True},
         'alcf_data_portal': {'handlers': ['stream'], 'level': 'DEBUG', 'propagate': True},
+        'celery': {'handlers': ['stream'], 'level': 'DEBUG', 'propagate': True},
     },
 }
 
