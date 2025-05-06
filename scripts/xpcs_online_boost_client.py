@@ -102,7 +102,7 @@ def get_filepaths(raw, hdf, qmap, output, experiment, deployment):
         },
         "output": {
             "source": deployment.staging_collection.to_globus(output_source),
-            "destination": deployment.source_collection.to_globus(output),
+            "destination": deployment.source_collection.to_globus(output) if output else "",
             "compute": {
                 "directory": output_source,
                 "file": os.path.join(output_source, dataset_name + "_results.hdf")
@@ -190,11 +190,11 @@ def get_flow_input(args, deployment, filepaths, dataset_staging_dir):
             'compute_endpoint': depl_input['input']['compute_endpoint'],
         }
     }
-    flow_input = add_result_transfer_items(flow_input, filepaths)
+    flow_input = add_result_transfer_items(flow_input, filepaths, args)
     flow_input = add_rigaku_transfer_items(flow_input, filepaths['raw'], deployment)
     return flow_input
 
-def add_result_transfer_items(flow_input, filepaths):
+def add_result_transfer_items(flow_input, filepaths, args):
     ''' Transfer back step transfers data to the following location automatically:
         /cycle/parent/analysis/dataset-name/dataset.hdf
         Input dirs tend to look like the following, but the strongest convention we have is that the .hdf file
