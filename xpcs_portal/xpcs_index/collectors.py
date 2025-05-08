@@ -5,7 +5,7 @@ import copy
 import collections
 from globus_app_flows.collectors.search import SearchCollector
 from globus_app_flows.collectors.transfer import TransferCollector
-from gladier_xpcs.deployments import deployment_map
+from gladier_xpcs.deployments import deployment_map, BaseDeployment
 from gladier_xpcs.flows.flow_boost import XPCSBoost
 
 log = logging.getLogger(__name__)
