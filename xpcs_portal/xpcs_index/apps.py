@@ -23,7 +23,7 @@ AVAILABLE_DEPLOYMENTS = {
 
 SEARCH_INDEXES = {
     'xpcs': {
-        'uuid': '6871e83e-866b-41bc-8430-e3cf83b43bdc',
+        'uuid': '4428cfe6-611b-48db-81b2-167a7d9710ea',
         'name': 'APS XPCS',
         # 'tagline': 'APS Beamline Data',
         'results_per_page': 50,
@@ -81,18 +81,26 @@ SEARCH_INDEXES = {
             ('text_outputs', fields.text_outputs),
         ],
         'facets': [
-            {
-                "name": "Creator",
-                "field_name": "dc.creators.creatorName",
+            # {
+            #     "name": "Creator",
+            #     "field_name": "dc.creators.creatorName",
 
-            },
+            # },
             {
-                "name": "Parent Folder",
-                "field_name": "project_metadata.parent",
+                "name": "Experiment",
+                "field_name": "project_metadata.experiment",
             },
             {
                 "name": "APS Cycle",
                 "field_name": "project_metadata.cycle",
+            },
+            {
+                "name": "Organization",
+                "field_name": "project_metadata.organization",
+            },
+            {
+                "name": "Facility",
+                "field_name": "project_metadata.facility",
             },
             {
                 "name": "Dates",
