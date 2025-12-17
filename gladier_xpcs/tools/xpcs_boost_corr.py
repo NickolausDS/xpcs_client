@@ -54,9 +54,69 @@ def xpcs_boost_corr(boost_corr: dict = None, corr_input_file: str = None, **data
         # in case corr outputs any file we don't expect.
         os.chdir(boost_corr['output'])
 
-        # usage: boost_corr [-h] -r RAW_FILENAME [-q QMAP_FILENAME] [-o OUTPUT_DIR] [-s SMOOTH] 
-        # [-i GPU_ID] [-b BEGIN_FRAME] [-e END_FRAME] [-f STRIDE_FRAME]
-        # [-a AVG_FRAME] [-t TYPE] [-d DQ_SELECTION] [-v] [-G] [-n] [-w] [-c CONFIG_JSON]
+        """
+        usage: boost_corr [-h] -r RAW_FILENAME [-q QMAP_FILENAME] [-o OUTPUT_DIR]
+                        [-s SMOOTH] [-i GPU_ID] [-nf {0,1}] [-b BEGIN_FRAME]
+                        [-e END_FRAME] [-f STRIDE_FRAME] [-a AVG_FRAME] [-t TYPE]
+                        [-d DQ_SELECTION] [-v] [-G] [-n] [-np NUM_PARTIAL_G2]
+                        [-p PREFIX] [-u SUFFIX] [--bin-time-s BIN_TIME_S]
+                        [--run-config-path RUN_CONFIG_PATH] [-w] [-c CONFIG_JSON]
+
+        Compute Multi-tau/Twotime correlation for APS-8IDI XPCS datasets on GPU/CPU
+
+        options:
+        -h, --help            show this help message and exit
+        -r RAW_FILENAME, --raw RAW_FILENAME Filename of the raw data file (imm/rigaku/hdf)
+        -q QMAP_FILENAME, --qmap QMAP_FILENAME Filename of the qmap file (h5/hdf)
+        -o OUTPUT_DIR, --output OUTPUT_DIR Output directory for result files. Directory will be created if it doesn't exist. [default: cluster_results]
+        -s SMOOTH, --smooth SMOOTH
+        Smooth method for Twotime correlation. [default: sqmap]
+        -i GPU_ID, --gpu-id GPU_ID GPU selection: -1 for CPU, -2 for auto-scheduling, >=0 for specific GPU. [default: -1]
+        -nf {0,1}, --normalize-frame {0,1}
+        1 to enable, 0 to disable frame-based normalization.
+        [default: True]
+        -b BEGIN_FRAME, --begin-frame BEGIN_FRAME
+        Starting frame index (0-based) for correlation. Used
+        to skip bad initial frames. If negative, it will use
+        python slice stype to resolve the start frames.
+        [default: 0]
+        -e END_FRAME, --end-frame END_FRAME
+        Ending frame index (0-based, exclusive) for
+        correlation. -1 uses all frames after begin_frame.
+        [default: -1]
+        -f STRIDE_FRAME, --stride-frame STRIDE_FRAME
+        Frame stride for processing. [default: 1]
+        -a AVG_FRAME, --avg-frame AVG_FRAME
+        Number of frames to average before correlation.
+        [default: 1]
+        -t TYPE, --type TYPE  Analysis type: "Multitau", "Twotime", or "Both".
+        [default: Multitau]
+        -d DQ_SELECTION, --dq-selection DQ_SELECTION
+        DQ list selection (e.g., "1,2,5-7" selects
+        [1,2,5,6,7]). "all" uses all dynamic qindex. [default:
+        all]
+        -v, --verbose         Enable verbose output
+        -G, --save-G2         Save G2, IP, and IF to file
+        -n, --dry-run         Show arguments without executing
+        -np NUM_PARTIAL_G2, --num-partial-g2 NUM_PARTIAL_G2
+        number of partial g2 to compute. if 0, no partial g2
+        will be computed
+        -p PREFIX, --prefix PREFIX
+        prefix to add to the result filename
+        -u SUFFIX, --suffix SUFFIX
+        suffix to add to the result filename
+        --bin-time-s BIN_TIME_S
+        time bin size in seconds for Timepix4 data. [default:
+        1e-06]
+        --run-config-path RUN_CONFIG_PATH
+        Path to the run configuration file for Timepix4 data.
+        [default: None]
+        -w, --overwrite       Overwrite existing result files
+        -c CONFIG_JSON, --config CONFIG_JSON
+        Configuration file path. Command line arguments
+        override config file values
+        """
+
 
         cmd = [
             "boost_corr",
@@ -74,6 +134,11 @@ def xpcs_boost_corr(boost_corr: dict = None, corr_input_file: str = None, **data
             "-G" if boost_corr["save_g2"] else "",
             "-w" if boost_corr["overwrite"] else "",
             "-v" if boost_corr["verbose"] else "",
+            f"-p {boost_corr['prefix']}" if boost_corr.get('prefix') else "",
+            f"-u {boost_corr['suffix']}" if boost_corr.get('suffix') else "",
+            f"-nf {boost_corr['normalize_frame']}" if "normalize_frame" in boost_corr else "",
+            f"-p {boost_corr['prefix']}" if boost_corr.get('prefix') else "",
+            # "--bin-time-s 0.000001",
         ]
         corr_start = time.time()
         result = subprocess.run([" ".join(cmd)], shell=True, capture_output=True, text=True)
@@ -97,26 +162,34 @@ def xpcs_boost_corr(boost_corr: dict = None, corr_input_file: str = None, **data
         }
 
         metadata_file = pathlib.Path(boost_corr["output"]) / "corr_metadata_output.json"
-        metadata = {
+        metadata_file_content = {
             'boost_corr': boost_corr,
             'execution_time_seconds': execution_time_seconds,
             'metadata': metadata,
         }
-        metadata_file.write_text(json.dumps(metadata, indent=2))
+        metadata_file.write_text(json.dumps(metadata_file_content, indent=2))
     except Exception:
         error_log = pathlib.Path(pathlib.Path(boost_corr["output"]) / "globus_compute_error.log")
         error_log.write_text(traceback.format_exc())
 
-
-    return {
-        'result': 'SUCCESS' if returncode == 0 else "FAILED",
-    }
+    # corr_input_file means we're in 'batch' mode, and we need to return as little metadata as possible
+    if corr_input_file:
+        return {
+            'result': 'SUCCESS' if returncode == 0 else "FAILED",
+        }
+    else:
+        return {
+            # 'stdout': str(result.stdout),
+            # 'stderr': str(result.stderr),
+            'result': 'SUCCESS' if returncode == 0 else "FAILED",
+            'metadata': metadata,
+            'metadata_file_content': metadata_file_content,
+        }
 
 
 @generate_flow_definition(modifiers={
     xpcs_boost_corr: {
         'WaitTime': 604800,
-        "tasks": "$.input.xpcs_boost_corr_tasks",
         'ExceptionOnActionFailure': True,
     }
 })

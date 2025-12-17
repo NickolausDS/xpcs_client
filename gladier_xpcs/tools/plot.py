@@ -94,7 +94,7 @@ class MakeCorrPlots(GladierBaseTool):
         "corr_results",
         "webplot_target_dir",
     ]
-
+    action_url = "https://compute.actions.globus.org/v3"
     compute_functions = [make_corr_plots]
 
 

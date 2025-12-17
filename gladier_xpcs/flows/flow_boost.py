@@ -1,6 +1,17 @@
 from gladier import GladierBaseClient, generate_flow_definition
 
-@generate_flow_definition
+@generate_flow_definition(modifiers={
+    "batch_corr_setup": {
+        "user_endpoint_config": {
+            "queue.$": "$.input.compute_queue"
+        }
+    },
+    "make_corr_plots": {
+        "user_endpoint_config": {
+            "queue.$": "$.input.compute_queue"
+        }
+    },
+})
 class XPCSBoost(GladierBaseClient):
     globus_group = '368beb47-c9c5-11e9-b455-0efb3ba9a670'
     

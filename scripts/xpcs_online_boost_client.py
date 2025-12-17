@@ -34,9 +34,9 @@ def arg_parse():
     parser.add_argument('--experiment', help='Name of the DM experiment', default='comm202410')
     parser.add_argument('--hdf', help='Deprecated. Unused.', default=None)
     parser.add_argument('-r', '--raw', help='Path to the raw data file. Multiple formats (.imm, .bin, etc) supported',
-                        default='/gdata/dm/8IDI/2024-3/comm202410/data/G001_436_PorousGlass-08000/G001_436_PorousGlass-08000.h5')
+                        default='/system/test/s8iddm_boost_corr_test/data/01bsaxs12959_PA-pEG-ITO-A_a0208_f100000_r00001/01bsaxs12959_PA-pEG-ITO-A_a0208_f100000_r00001.bin.000')
     parser.add_argument('-q', '--qmap', help='Path to the qmap file',
-                        default='/gdata/dm/8IDI/2024-3/comm202410/data/eiger4m_qmap_1018_hongrui_d36.h5')
+                        default='/system/test/s8iddm_boost_corr_test/data/rigaku_qmap_Sq360_Dq36_Lin_0501.hdf')
     parser.add_argument('-c', '--cycle', help="cycle for the dataset. Ex: 2025-1. Determines publish location.", default=None)
     parser.add_argument('-t', '--type', default='Multitau', help='Analysis type to be performed.', choices=['Multitau', 'Both', 'Twotime'])
     parser.add_argument('-i', '--gpu-id', type=int, default=0, help='Choose which GPU to use. if the input is -1, then CPU is used')
@@ -273,6 +273,7 @@ def get_flow_input(
                 **extra_metadata,
 
             },
+            'compute_queue': 'debug',
             'compute_endpoint': depl_input['input']['compute_endpoint'],
         }
     }
@@ -303,6 +304,10 @@ def get_boost_corr_arguments(args, filepaths):
             "dq_selection": args.dq_selection,
             "save_g2": args.save_g2,
             "smooth": args.smooth,
+            "prefix": None,
+            "suffix": None,
+            "normalize_frame": 0,
+            "bin_time_s": "0.000001",
     }
 
 def determine_experiment(experiment: str):
