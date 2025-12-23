@@ -1,7 +1,7 @@
 from gladier import GladierBaseClient, generate_flow_definition
 
 @generate_flow_definition(modifiers={
-    "batch_corr_setup": {
+    "xpcs_boost_corr": {
         "user_endpoint_config": {
             "queue.$": "$.input.compute_queue"
         }
